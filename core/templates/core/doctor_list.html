@@ -1,0 +1,411 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Find Doctors | MediCare</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'core/css/style.css' %}"
+    >
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+        <div class="container">
+
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+                ✚ MediCare
+            </a>
+
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'role_dashboard' %}"
+                       class="btn btn-outline-primary">
+                        Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}"
+                       class="btn btn-outline-primary">
+                        Login
+                    </a>
+
+                    <a href="{% url 'register' %}"
+                       class="btn btn-primary">
+                        Register
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'home' %}"
+                   class="btn btn-outline-secondary">
+                    Back to Home
+                </a>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- FIND DOCTORS SECTION -->
+    <section class="section-padding">
+        <div class="container">
+
+            <!-- SUCCESS / ERROR MESSAGES -->
+            {% if messages %}
+                {% for message in messages %}
+
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show"
+                         role="alert">
+
+                        {{ message }}
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close">
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+
+
+            <!-- HEADING -->
+            <div class="text-center mb-5">
+
+                <span class="section-label">
+                    OUR SPECIALISTS
+                </span>
+
+                <h1 class="section-title">
+                    Find Your Doctor
+                </h1>
+
+                <p class="section-subtitle">
+                    Search our healthcare professionals
+                    and book your appointment easily.
+                </p>
+
+            </div>
+
+
+            <!-- SEARCH AND FILTER FORM -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
+
+                <form method="GET"
+                      action="{% url 'doctor_list' %}">
+
+                    <div class="row g-3 align-items-end">
+
+                        <!-- SEARCH INPUT -->
+                        <div class="col-md-5">
+
+                            <label for="doctorSearch"
+                                   class="form-label fw-semibold">
+                                Search Doctor
+                            </label>
+
+                            <input
+                                type="text"
+                                id="doctorSearch"
+                                name="search"
+                                class="form-control"
+                                placeholder="Enter doctor's name"
+                                value="{{ search_query }}"
+                            >
+
+                        </div>
+
+
+                        <!-- SPECIALIZATION FILTER -->
+                        <div class="col-md-4">
+
+                            <label for="specializationFilter"
+                                   class="form-label fw-semibold">
+                                Specialization
+                            </label>
+
+                            <select
+                                id="specializationFilter"
+                                name="specialization"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All Specializations
+                                </option>
+
+                                {% for specialization in specializations %}
+
+                                    <option
+                                        value="{{ specialization.id }}"
+                                        {% if selected_specialization == specialization.id|stringformat:"s" %}selected{% endif %}
+                                    >
+                                        {{ specialization.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- SEARCH BUTTON -->
+                        <div class="col-md-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Search
+                            </button>
+
+                        </div>
+
+
+                        <!-- CLEAR FILTERS -->
+                        <div class="col-md-1">
+
+                            <a
+                                href="{% url 'doctor_list' %}"
+                                class="btn btn-outline-secondary w-100"
+                                title="Clear search and filters"
+                                aria-label="Clear filters"
+                            >
+                                ×
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- RESULTS HEADING -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <h4 class="fw-bold mb-0">
+                    Available Doctors
+                </h4>
+
+                <span class="text-muted">
+                    {{ doctors|length }} doctor{{ doctors|length|pluralize }} found
+                </span>
+
+            </div>
+
+
+            <!-- DOCTOR CARDS -->
+            <div class="row g-4">
+
+                {% for doctor in doctors %}
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="specialty-card text-start h-100">
+
+                        <!-- DOCTOR ICON -->
+                        <div class="specialty-icon mx-0">
+                            ✚
+                        </div>
+
+
+                        <!-- DOCTOR NAME -->
+                        <h3>
+                            Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}
+                        </h3>
+
+
+                        <!-- SPECIALIZATION -->
+                        <p
+                            class="fw-semibold"
+                            style="color: #087f8c;"
+                        >
+                            {{ doctor.specialization.name }}
+                        </p>
+
+
+                        <!-- QUALIFICATION -->
+                        <p>
+                            <strong>Qualification:</strong>
+                            {{ doctor.qualification }}
+                        </p>
+
+
+                        <!-- EXPERIENCE -->
+                        <p>
+                            <strong>Experience:</strong>
+                            {{ doctor.experience }} years
+                        </p>
+
+
+                        <!-- CONSULTATION FEE -->
+                        <p>
+                            <strong>Consultation Fee:</strong>
+                            ₹{{ doctor.consultation_fee }}
+                        </p>
+
+
+                        <!-- BIO -->
+                        <p>
+                            {{ doctor.bio }}
+                        </p>
+
+
+                        <hr>
+
+
+                        <!-- APPOINTMENT SECTION -->
+                        <h5 class="mt-4 mb-3">
+                            Available Appointments
+                        </h5>
+
+
+                        {% for slot in doctor.available_slots %}
+
+                            <div class="mb-2">
+
+                                {% if user.is_authenticated %}
+
+                                    <!-- BOOKING FORM -->
+                                    <form
+                                        method="POST"
+                                        action="{% url 'book_appointment' slot.id %}"
+                                    >
+
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-primary w-100"
+                                        >
+
+                                            <span class="d-block">
+                                                📅 {{ slot.date|date:"d M Y" }}
+                                            </span>
+
+                                            <span class="d-block">
+                                                🕒 {{ slot.start_time|time:"h:i A" }}
+                                                -
+                                                {{ slot.end_time|time:"h:i A" }}
+                                            </span>
+
+                                            <span class="d-block fw-bold mt-2">
+                                                Book Appointment
+                                            </span>
+
+                                        </button>
+
+                                    </form>
+
+                                {% else %}
+
+                                    <!-- LOGIN TO BOOK -->
+                                    <a
+                                        href="{% url 'login' %}?next={% url 'doctor_list' %}"
+                                        class="btn btn-outline-primary w-100"
+                                    >
+
+                                        <span class="d-block">
+                                            📅 {{ slot.date|date:"d M Y" }}
+                                        </span>
+
+                                        <span class="d-block">
+                                            🕒 {{ slot.start_time|time:"h:i A" }}
+                                        </span>
+
+                                        <span class="d-block fw-bold mt-2">
+                                            Login to Book
+                                        </span>
+
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% empty %}
+
+                            <div class="alert alert-light border">
+                                <p class="text-muted mb-0">
+                                    No available appointment slots
+                                    at the moment.
+                                </p>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                    <!-- NO MATCHING DOCTORS -->
+                    <div class="col-12 text-center py-5">
+
+                        <div class="alert alert-info">
+
+                            <h5 class="fw-bold">
+                                No doctors found
+                            </h5>
+
+                            <p class="mb-3">
+                                No doctors match your search criteria.
+                                Try another name or specialization.
+                            </p>
+
+                            <a
+                                href="{% url 'doctor_list' %}"
+                                class="btn btn-primary"
+                            >
+                                View All Doctors
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+        <div class="container text-center">
+            <p class="mb-0">
+                © 2026 MediCare.
+                Doctor Appointment Booking System.
+            </p>
+        </div>
+
+    </footer>
+
+
+    <!-- BOOTSTRAP JAVASCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
